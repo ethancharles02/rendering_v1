@@ -1,4 +1,9 @@
+#allows the program to have a rotated camera
+#add to the current math that will allow efficient manipulation of objects
 from math import *
+
+#testing
+import time
 
 class ray:
     """
@@ -81,21 +86,21 @@ class recPrism:
             "y" : (lesser side plane, higher side plane)
             "z" : (lesser side plane, higher side plane)
     """
-    def __init__(self, length = 1, width = 1, height = 1,origin = (0, 0, 0)):
+    def __init__(self, length = 1, width = 1, height = 1, origin = (0, 0, 0)):
         self.length = length
         self.width = width
         self.height = height
         self.origin = origin
         
         self.corners = {
-            1 : (origin[0] - length/2, origin[1] + width/2, origin[2] + height/2),
-            2 : (origin[0] + length/2, origin[1] + width/2, origin[2] + height/2),
-            3 : (origin[0] - length/2, origin[1] - width/2, origin[2] + height/2),
-            4 : (origin[0] + length/2, origin[1] - width/2, origin[2] + height/2),
-            5 : (origin[0] - length/2, origin[1] + width/2, origin[2] - height/2),
-            6 : (origin[0] + length/2, origin[1] + width/2, origin[2] - height/2),
-            7 : (origin[0] - length/2, origin[1] - width/2, origin[2] - height/2),
-            8 : (origin[0] + length/2, origin[1] - width/2, origin[2] - height/2),
+            1 : (self.origin[0] - self.length/2, self.origin[1] + self.width/2, self.origin[2] + self.height/2),
+            2 : (self.origin[0] + self.length/2, self.origin[1] + self.width/2, self.origin[2] + self.height/2),
+            3 : (self.origin[0] - self.length/2, self.origin[1] - self.width/2, self.origin[2] + self.height/2),
+            4 : (self.origin[0] + self.length/2, self.origin[1] - self.width/2, self.origin[2] + self.height/2),
+            5 : (self.origin[0] - self.length/2, self.origin[1] + self.width/2, self.origin[2] - self.height/2),
+            6 : (self.origin[0] + self.length/2, self.origin[1] + self.width/2, self.origin[2] - self.height/2),
+            7 : (self.origin[0] - self.length/2, self.origin[1] - self.width/2, self.origin[2] - self.height/2),
+            8 : (self.origin[0] + self.length/2, self.origin[1] - self.width/2, self.origin[2] - self.height/2),
             }
           
         self.longestdist = (
@@ -105,11 +110,34 @@ class recPrism:
             ) ** (1/2)
           
         self.plane = {
-            "x" : (origin[0] - length / 2, origin[0] + length / 2),
-            "y" : (origin[1] - width / 2, origin[1] + width / 2),
-            "z" : (origin[2] - height / 2, origin[2] + height / 2)
+            "x" : (self.origin[0] - self.length / 2, self.origin[0] + self.length / 2),
+            "y" : (self.origin[1] - self.width / 2, self.origin[1] + self.width / 2),
+            "z" : (self.origin[2] - self.height / 2, self.origin[2] + self.height / 2)
             }
-    pass
+
+    def updatePosData(self):
+        self.corners = {
+            1 : (self.origin[0] - self.length/2, self.origin[1] + self.width/2, self.origin[2] + self.height/2),
+            2 : (self.origin[0] + self.length/2, self.origin[1] + self.width/2, self.origin[2] + self.height/2),
+            3 : (self.origin[0] - self.length/2, self.origin[1] - self.width/2, self.origin[2] + self.height/2),
+            4 : (self.origin[0] + self.length/2, self.origin[1] - self.width/2, self.origin[2] + self.height/2),
+            5 : (self.origin[0] - self.length/2, self.origin[1] + self.width/2, self.origin[2] - self.height/2),
+            6 : (self.origin[0] + self.length/2, self.origin[1] + self.width/2, self.origin[2] - self.height/2),
+            7 : (self.origin[0] - self.length/2, self.origin[1] - self.width/2, self.origin[2] - self.height/2),
+            8 : (self.origin[0] + self.length/2, self.origin[1] - self.width/2, self.origin[2] - self.height/2),
+            }
+          
+        self.longestdist = (
+            (self.corners[8][0] - self.corners[1][0]) ** 2 + 
+            (self.corners[8][1] - self.corners[1][1]) ** 2 +
+            (self.corners[8][2] - self.corners[1][2]) ** 2
+            ) ** (1/2)
+          
+        self.plane = {
+            "x" : (self.origin[0] - self.length / 2, self.origin[0] + self.length / 2),
+            "y" : (self.origin[1] - self.width / 2, self.origin[1] + self.width / 2),
+            "z" : (self.origin[2] - self.height / 2, self.origin[2] + self.height / 2)
+            }
 
 
 
@@ -141,112 +169,59 @@ def distPoints(p1, p2):
     """
     return((p2[0] - p1[0]) ** 2 + (p2[1] - p1[1]) ** 2 + (p2[2] - p1[2]) ** 2) ** (1/2)
 
-# used for displaying the basic colors based on the cube's plane that is being displayed
-if True:
-    def showCollisionPoints(gRay, gRecPrism):
-        """
-        returns the distance if the given ray and given rectangular prism have collision points
-        showCollisionPoints(gRay, gRecPrism) gRay refers to the given ray class that you want to check the collision for
-                                            gRecPrism refers to the recPrism class given
-        """
-        #changed the return arguments from showing the distance to showing a singular color based on what side the collision is on
-        #x collision checking
-        #optimization options: only do math if the first angle points in the direction of the cube
-        if gRay.ray_origin[0] <= gRecPrism.plane["x"][0]:
-            if (gRay.endPoint[0] < gRecPrism.plane["x"][0]) != (gRay.ray_origin[0] < gRecPrism.plane["x"][0]):
-                tempColPoint = gRay.pointFromX(gRecPrism.plane["x"][0])
-                if (gRecPrism.plane["y"][0] <= tempColPoint[1] <= gRecPrism.plane["y"][1]) and (gRecPrism.plane["z"][0] <= tempColPoint[2] <= gRecPrism.plane["z"][1]):
-                    return((255,0,0))
-        
-        if gRay.ray_origin[0] >= gRecPrism.plane["x"][1]:
-            if (gRay.endPoint[0] < gRecPrism.plane["x"][1]) != (gRay.ray_origin[0] < gRecPrism.plane["x"][1]):
-                tempColPoint = gRay.pointFromX(gRecPrism.plane["x"][1])
-                if (gRecPrism.plane["y"][0] <= tempColPoint[1] <= gRecPrism.plane["y"][1]) and (gRecPrism.plane["z"][0] <= tempColPoint[2] <= gRecPrism.plane["z"][1]):
-                    return((255,255,0))
-        
-        #y collision checking
-        if gRay.ray_origin[1] <= gRecPrism.plane["y"][0]:
-            if (gRay.endPoint[1] < gRecPrism.plane["y"][0]) != (gRay.ray_origin[1] < gRecPrism.plane["y"][0]):
-                tempColPoint = gRay.pointFromY(gRecPrism.plane["y"][0])
-                if (gRecPrism.plane["x"][0] <= tempColPoint[0] <= gRecPrism.plane["x"][1]) and (gRecPrism.plane["z"][0] <= tempColPoint[2] <= gRecPrism.plane["z"][1]):
-                    return((255,0,255))
-        
-        if gRay.ray_origin[1] >= gRecPrism.plane["y"][1]:
-            if (gRay.endPoint[1] < gRecPrism.plane["y"][1]) != (gRay.ray_origin[1] < gRecPrism.plane["y"][1]):
-                tempColPoint = gRay.pointFromY(gRecPrism.plane["y"][1])
-                if (gRecPrism.plane["x"][0] <= tempColPoint[0] <= gRecPrism.plane["x"][1]) and (gRecPrism.plane["z"][0] <= tempColPoint[2] <= gRecPrism.plane["z"][1]):
-                    return((0,255,0))
-        
-        #z collision checking
-        if gRay.ray_origin[2] <= gRecPrism.plane["z"][0]:
-            if (gRay.endPoint[2] < gRecPrism.plane["z"][0]) != (gRay.ray_origin[2] < gRecPrism.plane["z"][0]):
-                tempColPoint = gRay.pointFromZ(gRecPrism.plane["z"][0])
-                if (gRecPrism.plane["x"][0] <= tempColPoint[0] <= gRecPrism.plane["x"][1]) and (gRecPrism.plane["y"][0] <= tempColPoint[1] <= gRecPrism.plane["y"][1]):
-                    return((0,255,255))
+def showCollisionPoints(gRay, gRecPrism):
+    """
+    returns the distance if the given ray and given rectangular prism have collision points
+    showCollisionPoints(gRay, gRecPrism) gRay refers to the given ray class that you want to check the collision for
+                                         gRecPrism refers to the recPrism class given
+    """
+    #changed the return arguments from showing the distance to showing a singular color based on what side the collision is on
+    #x collision checking
+    #optimization options: only do math if the first angle points in the direction of the cube
+    if gRay.ray_origin[0] <= gRecPrism.plane["x"][0]:
+        if (gRay.endPoint[0] < gRecPrism.plane["x"][0]) != (gRay.ray_origin[0] < gRecPrism.plane["x"][0]):
+            tempColPoint = gRay.pointFromX(gRecPrism.plane["x"][0])
+            if (gRecPrism.plane["y"][0] <= tempColPoint[1] <= gRecPrism.plane["y"][1]) and (gRecPrism.plane["z"][0] <= tempColPoint[2] <= gRecPrism.plane["z"][1]):
+                return((255,0,0))
+      
+    if gRay.ray_origin[0] >= gRecPrism.plane["x"][1]:
+        if (gRay.endPoint[0] < gRecPrism.plane["x"][1]) != (gRay.ray_origin[0] < gRecPrism.plane["x"][1]):
+            tempColPoint = gRay.pointFromX(gRecPrism.plane["x"][1])
+            if (gRecPrism.plane["y"][0] <= tempColPoint[1] <= gRecPrism.plane["y"][1]) and (gRecPrism.plane["z"][0] <= tempColPoint[2] <= gRecPrism.plane["z"][1]):
+                return((255,255,0))
+      
+    #y collision checking
+    if gRay.ray_origin[1] <= gRecPrism.plane["y"][0]:
+        if (gRay.endPoint[1] < gRecPrism.plane["y"][0]) != (gRay.ray_origin[1] < gRecPrism.plane["y"][0]):
+            tempColPoint = gRay.pointFromY(gRecPrism.plane["y"][0])
+            if (gRecPrism.plane["x"][0] <= tempColPoint[0] <= gRecPrism.plane["x"][1]) and (gRecPrism.plane["z"][0] <= tempColPoint[2] <= gRecPrism.plane["z"][1]):
+                return((255,0,255))
+      
+    if gRay.ray_origin[1] >= gRecPrism.plane["y"][1]:
+        if (gRay.endPoint[1] < gRecPrism.plane["y"][1]) != (gRay.ray_origin[1] < gRecPrism.plane["y"][1]):
+            tempColPoint = gRay.pointFromY(gRecPrism.plane["y"][1])
+            if (gRecPrism.plane["x"][0] <= tempColPoint[0] <= gRecPrism.plane["x"][1]) and (gRecPrism.plane["z"][0] <= tempColPoint[2] <= gRecPrism.plane["z"][1]):
+                return((0,255,0))
+      
+    #z collision checking
+    if gRay.ray_origin[2] <= gRecPrism.plane["z"][0]:
+        if (gRay.endPoint[2] < gRecPrism.plane["z"][0]) != (gRay.ray_origin[2] < gRecPrism.plane["z"][0]):
+            tempColPoint = gRay.pointFromZ(gRecPrism.plane["z"][0])
+            if (gRecPrism.plane["x"][0] <= tempColPoint[0] <= gRecPrism.plane["x"][1]) and (gRecPrism.plane["y"][0] <= tempColPoint[1] <= gRecPrism.plane["y"][1]):
+                return((0,255,255))
 
-        if gRay.ray_origin[2] >= gRecPrism.plane["z"][1]:
-            if (gRay.endPoint[2] < gRecPrism.plane["z"][1]) != (gRay.ray_origin[2] < gRecPrism.plane["z"][1]):
-                tempColPoint = gRay.pointFromZ(gRecPrism.plane["z"][1])
-                if (gRecPrism.plane["x"][0] <= tempColPoint[0] <= gRecPrism.plane["x"][1]) and (gRecPrism.plane["y"][0] <= tempColPoint[1] <= gRecPrism.plane["y"][1]):
-                    return((0,0,255))
-        else:
-            return(False)
-
-# used for displaying the cube's texture as each rendered point being a distance value
-if False:
-    def showCollisionPoints(gRay, gRecPrism):
-        """
-        returns the distance if the given ray and given rectangular prism have collision points
-        showCollisionPoints(gRay, gRecPrism) gRay refers to the given ray class that you want to check the collision for
-                                            gRecPrism refers to the recPrism class given
-        """
-        #changed the return arguments from showing the distance to showing a singular color based on what side the collision is on
-        #x collision checking
-        #optimization options: only do math if the first angle points in the direction of the cube
-        if gRay.ray_origin[0] <= gRecPrism.plane["x"][0]:
-            if (gRay.endPoint[0] < gRecPrism.plane["x"][0]) != (gRay.ray_origin[0] < gRecPrism.plane["x"][0]):
-                tempColPoint = gRay.pointFromX(gRecPrism.plane["x"][0])
-                if (gRecPrism.plane["y"][0] <= tempColPoint[1] <= gRecPrism.plane["y"][1]) and (gRecPrism.plane["z"][0] <= tempColPoint[2] <= gRecPrism.plane["z"][1]):
-                    return distPoints(tempColPoint, gRay.ray_origin)
-        
-        if gRay.ray_origin[0] >= gRecPrism.plane["x"][1]:
-            if (gRay.endPoint[0] < gRecPrism.plane["x"][1]) != (gRay.ray_origin[0] < gRecPrism.plane["x"][1]):
-                tempColPoint = gRay.pointFromX(gRecPrism.plane["x"][1])
-                if (gRecPrism.plane["y"][0] <= tempColPoint[1] <= gRecPrism.plane["y"][1]) and (gRecPrism.plane["z"][0] <= tempColPoint[2] <= gRecPrism.plane["z"][1]):
-                    return distPoints(tempColPoint, gRay.ray_origin)
-        
-        #y collision checking
-        if gRay.ray_origin[1] <= gRecPrism.plane["y"][0]:
-            if (gRay.endPoint[1] < gRecPrism.plane["y"][0]) != (gRay.ray_origin[1] < gRecPrism.plane["y"][0]):
-                tempColPoint = gRay.pointFromY(gRecPrism.plane["y"][0])
-                if (gRecPrism.plane["x"][0] <= tempColPoint[0] <= gRecPrism.plane["x"][1]) and (gRecPrism.plane["z"][0] <= tempColPoint[2] <= gRecPrism.plane["z"][1]):
-                    return distPoints(tempColPoint, gRay.ray_origin)
-        
-        if gRay.ray_origin[1] >= gRecPrism.plane["y"][1]:
-            if (gRay.endPoint[1] < gRecPrism.plane["y"][1]) != (gRay.ray_origin[1] < gRecPrism.plane["y"][1]):
-                tempColPoint = gRay.pointFromY(gRecPrism.plane["y"][1])
-                if (gRecPrism.plane["x"][0] <= tempColPoint[0] <= gRecPrism.plane["x"][1]) and (gRecPrism.plane["z"][0] <= tempColPoint[2] <= gRecPrism.plane["z"][1]):
-                    return distPoints(tempColPoint, gRay.ray_origin)
-        
-        #z collision checking
-        if gRay.ray_origin[2] <= gRecPrism.plane["z"][0]:
-            if (gRay.endPoint[2] < gRecPrism.plane["z"][0]) != (gRay.ray_origin[2] < gRecPrism.plane["z"][0]):
-                tempColPoint = gRay.pointFromZ(gRecPrism.plane["z"][0])
-                if (gRecPrism.plane["x"][0] <= tempColPoint[0] <= gRecPrism.plane["x"][1]) and (gRecPrism.plane["y"][0] <= tempColPoint[1] <= gRecPrism.plane["y"][1]):
-                    return distPoints(tempColPoint, gRay.ray_origin)
-
-        if gRay.ray_origin[2] >= gRecPrism.plane["z"][1]:
-            if (gRay.endPoint[2] < gRecPrism.plane["z"][1]) != (gRay.ray_origin[2] < gRecPrism.plane["z"][1]):
-                tempColPoint = gRay.pointFromZ(gRecPrism.plane["z"][1])
-                if (gRecPrism.plane["x"][0] <= tempColPoint[0] <= gRecPrism.plane["x"][1]) and (gRecPrism.plane["y"][0] <= tempColPoint[1] <= gRecPrism.plane["y"][1]):
-                    return distPoints(tempColPoint, gRay.ray_origin)
-        else:
-            return False
+    if gRay.ray_origin[2] >= gRecPrism.plane["z"][1]:
+        if (gRay.endPoint[2] < gRecPrism.plane["z"][1]) != (gRay.ray_origin[2] < gRecPrism.plane["z"][1]):
+            tempColPoint = gRay.pointFromZ(gRecPrism.plane["z"][1])
+            if (gRecPrism.plane["x"][0] <= tempColPoint[0] <= gRecPrism.plane["x"][1]) and (gRecPrism.plane["y"][0] <= tempColPoint[1] <= gRecPrism.plane["y"][1]):
+                return((0,0,255))
+    else:
+        return(False)
 
 def angleBetween(p1, p2):
     theta = atan2((p2[1] - p1[1]), (p2[0] - p1[0]))
     phi = degrees(atan2((p2[2] - p1[2]), (((p2[1] - p1[1]) / sin(theta)))))
-    return(degrees(theta), phi)
+    return(degrees(theta) % 360, phi % 360)
   
 class camera:
     """
@@ -257,7 +232,7 @@ class camera:
         self.origin = origin
         self.direction = direction
         
-        left_coords = ray(ray_origin = (origin[0], origin[1] + 1, origin[2]), ray_direction = (direction[0] + fov/2, 0)).rayLenPos(1)
+        left_coords = ray(ray_origin = (self.origin[0], self.origin[1] + 1, self.origin[2]), ray_direction = (self.direction[0] + self.fov/2, 0)).rayLenPos(1)
         x = left_coords[0]
         y = left_coords[1]
         z = left_coords[0] * -1
@@ -267,6 +242,81 @@ class camera:
         z_change = 2 * z / canvas_height
         
         self.camera_rays = []
+        self.camera_angle_list_theta = []
+        self.camera_angle_list_phi = []
+        self.camera_angle_list = []
+        i = 0
         for x in range(canvas_width):
             for z in range(canvas_height):
                 self.camera_rays.append(ray(ray_origin = self.origin, ray_direction = angleBetween(self.origin, (cube_start_pos[0] - x * x_change * (canvas_width + 1) / canvas_width, cube_start_pos[1], cube_start_pos[2] - z * z_change * (canvas_height + 1) / canvas_height))))
+                self.camera_angle_list_theta.append(self.camera_rays[i].ray_direction[0])
+                self.camera_angle_list_phi.append(self.camera_rays[i].ray_direction[1])
+                self.camera_angle_list.append((self.camera_angle_list_theta[i], self.camera_angle_list_phi[i]))
+                i += 1
+    
+def convertCoordToScreenCoord(camera, coord = (0,0,0)):
+    cameraAngleToCoord = angleBetween(camera.origin, coord)
+    return cameraAngleToCoord
+
+def bbox(camera, cube, canvas_width, canvas_height):
+    """
+    """
+    
+    angleCameraList = camera.camera_angle_list
+    
+    #print(angleCameraList)
+    
+    for iteration in range(8):
+        #finds the angle between the camera and the iterations corner
+        angleCubeOrig = angleBetween(camera.origin, cube.corners[iteration + 1])
+
+        angleCheckRangeX = [0, canvas_width - 1]
+        while angleCameraList[angleCheckRangeX[0] * canvas_height][0] != angleCameraList[(angleCheckRangeX[1] - 1) * canvas_height][0]:
+            if angleCameraList[angleCheckRangeX[0] * canvas_height][0] > angleCubeOrig[0] > angleCameraList[((angleCheckRangeX[1] * canvas_height - angleCheckRangeX[0] * canvas_height) // 2) + angleCheckRangeX[0] * canvas_height][0]:
+                angleCheckRangeX = [angleCheckRangeX[0], ((angleCheckRangeX[1] - angleCheckRangeX[0]) // 2) + angleCheckRangeX[0]]
+                
+            elif angleCameraList[((angleCheckRangeX[1] * canvas_height - angleCheckRangeX[0] * canvas_height) // 2) + angleCheckRangeX[0] * canvas_height][0] > angleCubeOrig[0] > angleCameraList[angleCheckRangeX[1] * canvas_height][0]:
+                angleCheckRangeX = [((angleCheckRangeX[1] - angleCheckRangeX[0]) // 2) + angleCheckRangeX[0], angleCheckRangeX[1]]
+            
+            else:
+                break
+                        
+        angleCheckRange = [angleCheckRangeX[0] * canvas_height, angleCheckRangeX[0] * canvas_height + canvas_height]
+        
+        optimizedAngleList = angleCameraList[angleCheckRange[0]:angleCheckRange[1]]
+        
+        while angleCameraList[angleCheckRange[0]][1] != angleCameraList[angleCheckRange[1] - 1][1]:
+            if angleCameraList[angleCheckRange[0]][1] > angleCubeOrig[1] > angleCameraList[((angleCheckRange[1] - angleCheckRange[0]) // 2) + angleCheckRange[0]][1]:
+                angleCheckRange = [angleCheckRange[0], ((angleCheckRange[1] - angleCheckRange[0]) // 2) + angleCheckRange[0]]
+                
+            elif angleCameraList[((angleCheckRange[1] - angleCheckRange[0]) // 2) + angleCheckRange[0]][1] > angleCubeOrig[1] > angleCameraList[angleCheckRange[1]][1]:
+                angleCheckRange = [((angleCheckRange[1] - angleCheckRange[0]) // 2) + angleCheckRange[0], angleCheckRange[1]]
+                
+            else:
+                break
+
+        #the shortest distance in the list is the pixel that is closest to the corner of that cube
+        pixelIndex = angleCheckRange[0]
+        
+        #converts the index into a coordinate on the actual screen
+        pixelIndexCoords = [pixelIndex // canvas_height, pixelIndex % canvas_width]
+        
+        #rest of the code finds the bounding box that contains all of the cube in the smallest area
+        if iteration == 0:
+            bboxUpLeft = [pixelIndexCoords[0], pixelIndexCoords[1]]
+            bboxBotRight = [pixelIndexCoords[0], pixelIndexCoords[1]]
+            
+        else:
+            if pixelIndexCoords[0] < bboxUpLeft[0]:
+                bboxUpLeft[0] = pixelIndexCoords[0]
+                
+            if pixelIndexCoords[0] > bboxBotRight[0]:
+                bboxBotRight[0] = pixelIndexCoords[0]
+                
+            if pixelIndexCoords[1] < bboxUpLeft[1]:
+                bboxUpLeft[1] = pixelIndexCoords[1]
+                
+            if pixelIndexCoords[1] > bboxBotRight[1]:
+                bboxBotRight[1] = pixelIndexCoords[1]
+
+    return(bboxUpLeft, bboxBotRight)
